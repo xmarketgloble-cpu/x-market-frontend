@@ -13,13 +13,12 @@ import P2PTrading from './components/P2PTrading';
 import TransactionHistory from './components/TransactionHistory';
 
 // 🌐 Professional Configuration: Dynamic API URL
-// Railway မှာ တင်ထားတဲ့ Backend Link ကို ဒီမှာ အစားထိုးပါ
 const API_BASE_URL = "https://x-market-backend-production.up.railway.app";
 
 // Professional Axios Instance with Global Config
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 10000, 
 });
 
 // Axios Request Interceptor: Auto-inject token into every request
@@ -399,7 +398,7 @@ function App() {
                   )}
                 </div>
               ) : (
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
                   <Link to="/login" className="text-[10px] font-black uppercase tracking-widest hover:text-yellow-500 transition">Log In</Link>
                   <Link to="/register" className="bg-yellow-500 text-black px-5 py-2 rounded-lg text-[10px] font-black uppercase transition">Register</Link>
                 </div>
