@@ -18,7 +18,7 @@ const API_BASE_URL = "https://x-market-backend-production.up.railway.app";
 // Professional Axios Instance with Global Config
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
-  timeout: 10000, 
+  timeout: 15000, 
 });
 
 // Axios Request Interceptor: Auto-inject token into every request
@@ -180,12 +180,12 @@ function Dashboard({
         </div>
       )}
 
-      {/* ASSETS TABLE & MARKET OVERVIEW - Standardizing the UI Flow */}
+      {/* GLOBAL STATS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {globalStats && [
-            { label: 'Market Cap', val: formatCompact(globalStats.total_market_cap), change: '▲ 1.2%' },
-            { label: '24h Volume', val: formatCompact(globalStats.total_volume), change: '▼ 5.4%' },
-            { label: 'BTC Dominance', val: `${globalStats.btc_dominance.toFixed(1)}%`, change: '▲ 0.1%' },
+            { label: 'Market Cap', val: formatCompact(globalStats.total_market_cap) },
+            { label: '24h Volume', val: formatCompact(globalStats.total_volume) },
+            { label: 'BTC Dominance', val: `${globalStats.btc_dominance.toFixed(1)}%` },
             { label: 'Network', val: 'OPERATIONAL', live: true }
           ].map((s, i) => (
             <div key={i} className="bg-[#1E2329] p-5 rounded-2xl border border-[#2B3139]">
@@ -198,6 +198,7 @@ function Dashboard({
           ))}
       </div>
 
+      {/* MARKET MOVERS */}
       <div className="mb-12">
         <div className="flex items-center gap-2 mb-5">
           <span className="text-xl">🔥</span>
@@ -223,6 +224,7 @@ function Dashboard({
         </div>
       </div>
 
+      {/* ASSET TABLE */}
       <div className="bg-[#1E2329] rounded-3xl border border-[#2B3139] overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-[#0B0E11]/50 text-gray-500 text-[10px] uppercase font-black tracking-widest">
@@ -250,7 +252,7 @@ function Dashboard({
                   <td className={`px-8 py-6 text-right font-black ${data.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {data.change >= 0 ? '▲' : '▼'} {Math.abs(data.change).toFixed(2)}%
                   </td>
-                  <td className="px-8 py-6 text-right text-gray-400 text-sm hidden md:table-cell">{formatCompact(data.price * 19500000)}</td>
+                  <td className="px-8 py-6 text-right text-gray-400 text-sm hidden md:table-cell">{formatCompact(data.price * 1.9e10)}</td>
                   <td className="px-8 py-6 text-right space-x-2">
                     <button onClick={() => handleQuickBuy(c)} className="bg-white/5 hover:bg-yellow-500 text-white hover:text-black px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition">Buy</button>
                     <button onClick={() => handleQuickSell(c)} className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition">Sell</button>
@@ -287,7 +289,6 @@ function App() {
     { id: 'cardano', name: 'Cardano', symbol: 'ADA', rank: 5, logo: 'https://assets.coingecko.com/coins/images/975/small/cardano.png' }
   ], []);
 
-  // Professional Session Sync Logic
   useEffect(() => {
     const syncUser = async () => {
       const token = localStorage.getItem('token');
@@ -295,7 +296,6 @@ function App() {
         try {
           const res = await api.get('/user/me');
           setUser(res.data);
-          localStorage.setItem('isVerified', res.data.isVerified);
         } catch (err) {
           localStorage.clear();
           setUser(null);
@@ -307,8 +307,8 @@ function App() {
     const fetchData = async () => {
       try {
         const [priceRes, globalRes] = await Promise.all([
-          api.get('/crypto-prices'),
-          axios.get('https://api.coingecko.com/api/v3/global')
+          api.get('/crypto-prices').catch(() => ({ data: {} })),
+          axios.get('https://api.coingecko.com/api/v3/global').catch(() => ({ data: { data: { total_market_cap: { usd: 0 }, total_volume: { usd: 0 }, market_cap_percentage: { btc: 0 } } } }))
         ]);
         setPrices(priceRes.data);
         setGlobalStats({
@@ -316,15 +316,13 @@ function App() {
           total_volume: globalRes.data.data.total_volume.usd,
           btc_dominance: globalRes.data.data.market_cap_percentage.btc
         });
-        setLoading(false);
-      } catch (err) {
+      } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  // Real-time WebSocket Data
   useEffect(() => {
     const streams = 'btcusdt@ticker/ethusdt@ticker/bnbusdt@ticker/solusdt@ticker/adausdt@ticker';
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streams}`);
@@ -346,7 +344,13 @@ function App() {
   };
 
   const formatCurrency = (val) => val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const formatCompact = (num) => num ? `$${num > 1e9 ? (num / 1e9).toFixed(2) + 'B' : num.toLocaleString()}` : '$0';
+  const formatCompact = (num) => {
+    if (!num) return '$0';
+    if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    return `$${num.toLocaleString()}`;
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -381,20 +385,23 @@ function App() {
                     {user.email.charAt(0).toUpperCase()}
                   </button>
                   {showProfileMenu && (
-                    <div className="absolute right-0 mt-3 w-64 bg-[#1E2329] border border-[#2B3139] rounded-2xl shadow-2xl z-50 overflow-hidden">
-                      <div className="px-5 py-4 border-b border-[#2B3139] bg-[#0B0E11]/50">
-                        <p className="text-sm font-bold truncate">{user.email}</p>
-                        <p className={`text-[10px] font-black uppercase mt-1 ${user.isVerified === 'Verified' ? 'text-green-500' : 'text-yellow-500'}`}>{user.isVerified}</p>
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)}></div>
+                      <div className="absolute right-0 mt-3 w-64 bg-[#1E2329] border border-[#2B3139] rounded-2xl shadow-2xl z-50 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-[#2B3139] bg-[#0B0E11]/50">
+                          <p className="text-sm font-bold truncate">{user.email}</p>
+                          <p className={`text-[10px] font-black uppercase mt-1 ${user.isVerified === 'Verified' ? 'text-green-500' : 'text-yellow-500'}`}>{user.isVerified}</p>
+                        </div>
+                        <div className="p-2">
+                          {user.role === 'admin' && <Link to="/admin-panel" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition font-black italic">👑 Admin Control</Link>}
+                          <Link to="/history" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition">📜 Transaction History</Link>
+                          <Link to="/profile" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition">👤 Identity (KYC)</Link>
+                        </div>
+                        <div className="p-2 border-t border-[#2B3139]">
+                          <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 font-bold rounded-xl transition">🚪 Logout</button>
+                        </div>
                       </div>
-                      <div className="p-2">
-                        {user.role === 'admin' && <Link to="/admin-panel" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition font-black italic">👑 Admin Control</Link>}
-                        <Link to="/history" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition">📜 Transaction History</Link>
-                        <Link to="/profile" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition">👤 Identity (KYC)</Link>
-                      </div>
-                      <div className="p-2 border-t border-[#2B3139]">
-                        <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 font-bold rounded-xl transition">🚪 Logout</button>
-                      </div>
-                    </div>
+                    </>
                   )}
                 </div>
               ) : (
