@@ -2,6 +2,12 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+// 🌐 Professional Configuration: Dynamic API URL
+// မင်းရဲ့စက်ထဲမှာ စမ်းရင် localhost ကိုသုံးပြီး၊ Netlify ပေါ်မှာဆိုရင် Railway Link ကို အလိုအလျောက် သုံးပေးမှာပါ
+const API_BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://x-market-backend-production.up.railway.app";
+
 function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,11 +22,12 @@ function Register() {
     
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/send-otp', { email });
+      // ✅ localhost အစား API_BASE_URL ကို ပြောင်းလဲအသုံးပြုထားသည်
+      await axios.post(`${API_BASE_URL}/api/send-otp`, { email });
       setCodeSent(true);
       alert(`Verification code sent to ${email}. Check your inbox!`);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to send code.');
+      alert(err.response?.data?.message || 'Failed to send code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -32,7 +39,8 @@ function Register() {
     
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/register', { 
+      // ✅ localhost အစား API_BASE_URL ကို ပြောင်းလဲအသုံးပြုထားသည်
+      const res = await axios.post(`${API_BASE_URL}/api/register`, { 
         email, password, otp: verificationCode 
       });
       alert(res.data.message);
@@ -62,7 +70,7 @@ function Register() {
             <label className="text-gray-400 text-xs font-bold uppercase mb-2 block">Email Address</label>
             <input 
               type="email" placeholder="name@email.com"
-              className="w-full bg-[#0B0E11] border border-[#2B3139] rounded-xl p-3 text-white focus:border-yellow-500 outline-none disabled:opacity-50"
+              className="w-full bg-[#0B0E11] border border-[#2B3139] rounded-xl p-3 text-white focus:border-yellow-500 outline-none disabled:opacity-50 transition-all"
               onChange={(e) => setEmail(e.target.value)} required disabled={codeSent}
             />
           </div>
@@ -71,7 +79,7 @@ function Register() {
             <label className="text-gray-400 text-xs font-bold uppercase mb-2 block">Password</label>
             <input 
               type="password" placeholder="Minimum 8 characters"
-              className="w-full bg-[#0B0E11] border border-[#2B3139] rounded-xl p-3 text-white focus:border-yellow-500 outline-none"
+              className="w-full bg-[#0B0E11] border border-[#2B3139] rounded-xl p-3 text-white focus:border-yellow-500 outline-none transition-all"
               onChange={(e) => setPassword(e.target.value)} required minLength="8"
             />
           </div>
@@ -81,20 +89,20 @@ function Register() {
             <div className="flex gap-3">
               <input 
                 type="text" placeholder="6-digit code" maxLength="6"
-                className="flex-1 bg-[#0B0E11] border border-[#2B3139] rounded-xl p-3 text-white focus:border-yellow-500 outline-none tracking-widest disabled:opacity-50"
+                className="flex-1 bg-[#0B0E11] border border-[#2B3139] rounded-xl p-3 text-white focus:border-yellow-500 outline-none tracking-widest disabled:opacity-50 transition-all"
                 onChange={(e) => setVerificationCode(e.target.value)} required={codeSent} disabled={!codeSent}
               />
               <button 
                 type="button" onClick={handleSendCode} disabled={loading || codeSent || !email}
-                className="bg-[#2B3139] hover:bg-yellow-500 hover:text-black text-white px-4 rounded-xl text-xs font-bold transition disabled:opacity-50"
+                className="bg-[#2B3139] hover:bg-yellow-500 hover:text-black text-white px-4 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
               >
-                {codeSent ? 'Sent' : 'Get Code'}
+                {loading ? 'Sending...' : (codeSent ? 'Sent ✓' : 'Get Code')}
               </button>
             </div>
           </div>
 
-          <button disabled={loading || !codeSent} className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3.5 rounded-xl transition mt-4 disabled:opacity-50">
-            {loading ? 'Processing...' : 'Create Account'}
+          <button disabled={loading || !codeSent} className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3.5 rounded-xl transition-all mt-4 disabled:opacity-50 shadow-lg shadow-yellow-500/10 active:scale-95">
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
       </div>
