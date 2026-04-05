@@ -198,7 +198,6 @@ function Dashboard({
           ))}
       </div>
 
-      {/* MARKET MOVERS */}
       <div className="mb-12">
         <div className="flex items-center gap-2 mb-5">
           <span className="text-xl">🔥</span>
@@ -224,7 +223,6 @@ function Dashboard({
         </div>
       </div>
 
-      {/* ASSET TABLE */}
       <div className="bg-[#1E2329] rounded-3xl border border-[#2B3139] overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-[#0B0E11]/50 text-gray-500 text-[10px] uppercase font-black tracking-widest">
@@ -323,6 +321,7 @@ function App() {
     fetchData();
   }, []);
 
+  // Binance WebSocket for real-time updates
   useEffect(() => {
     const streams = 'btcusdt@ticker/ethusdt@ticker/bnbusdt@ticker/solusdt@ticker/adausdt@ticker';
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streams}`);
@@ -405,6 +404,7 @@ function App() {
                   )}
                 </div>
               ) : (
+                /* 🔥 Updated Login/Register buttons with items-center */
                 <div className="flex items-center gap-4">
                   <Link to="/login" className="text-[10px] font-black uppercase tracking-widest hover:text-yellow-500 transition">Log In</Link>
                   <Link to="/register" className="bg-yellow-500 text-black px-5 py-2 rounded-lg text-[10px] font-black uppercase transition">Register</Link>
