@@ -13,6 +13,7 @@ import P2PTrading from './components/P2PTrading';
 import TransactionHistory from './components/TransactionHistory';
 
 // 🌐 Professional Configuration: Dynamic API URL
+// ✅ အဆုံးမှာ / လုံးဝမပါအောင် သေချာပြင်ဆင်ထားပါတယ်
 const API_BASE_URL = "https://x-market-backend-production.up.railway.app";
 
 // Professional Axios Instance with Global Config
@@ -358,12 +359,12 @@ function App() {
   };
 
   if (loading && !prices) return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-yellow-500 font-black tracking-widest uppercase italic">X Market Initializing...</div>
+    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-yellow-500 font-black tracking-widest uppercase italic animate-pulse">X Market Initializing...</div>
   );
 
   return (
     <Router>
-      <div className="min-h-screen bg-[#0F172A] text-white">
+      <div className="min-h-screen bg-[#0F172A] text-white selection:bg-yellow-500 selection:text-black">
         <nav className="bg-[#0F172A]/90 backdrop-blur-xl border-b border-[#2B3139] sticky top-0 z-[100]">
           <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 group">
@@ -372,42 +373,47 @@ function App() {
             </Link>
             
             <div className="hidden lg:flex items-center gap-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              {['Markets', 'Trade', 'Futures', 'Earn'].map(m => <a key={m} href="#" className="hover:text-yellow-500 transition">{m}</a>)}
+              {['Markets', 'Trade', 'Futures', 'Earn'].map(m => <a key={m} href="#" className="hover:text-yellow-500 transition-all">{m}</a>)}
             </div>
             
             <div className="flex items-center gap-6">
-              <input type="text" placeholder="Search Assets" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="hidden sm:block bg-[#1E2329] rounded-lg pl-4 py-2 w-48 lg:w-64 border border-[#2B3139] focus:border-yellow-500 outline-none text-[10px] transition-all" />
+              <div className="relative hidden sm:block">
+                <input type="text" placeholder="Search Assets" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-[#1E2329] rounded-lg pl-4 pr-10 py-2 w-48 lg:w-64 border border-[#2B3139] focus:border-yellow-500 outline-none text-[10px] transition-all" />
+                <svg className="w-4 h-4 absolute right-3 top-2.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
               
               {user ? (
                 <div className="relative">
-                  <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="w-10 h-10 rounded-full bg-[#1E2329] border-2 border-[#2B3139] hover:border-yellow-500 flex items-center justify-center text-yellow-500 font-bold transition shadow-lg">
+                  <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-600 to-yellow-400 border-2 border-[#2B3139] hover:border-white flex items-center justify-center text-black font-black transition-all shadow-lg active:scale-90">
                     {user.email.charAt(0).toUpperCase()}
                   </button>
                   {showProfileMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)}></div>
-                      <div className="absolute right-0 mt-3 w-64 bg-[#1E2329] border border-[#2B3139] rounded-2xl shadow-2xl z-50 overflow-hidden">
+                      <div className="absolute right-0 mt-3 w-64 bg-[#1E2329] border border-[#2B3139] rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                         <div className="px-5 py-4 border-b border-[#2B3139] bg-[#0B0E11]/50">
-                          <p className="text-sm font-bold truncate">{user.email}</p>
-                          <p className={`text-[10px] font-black uppercase mt-1 ${user.isVerified === 'Verified' ? 'text-green-500' : 'text-yellow-500'}`}>{user.isVerified}</p>
+                          <p className="text-sm font-bold truncate text-white">{user.email}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className={`w-2 h-2 rounded-full ${user.isVerified === 'Verified' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                            <p className={`text-[10px] font-black uppercase tracking-widest ${user.isVerified === 'Verified' ? 'text-green-500' : 'text-yellow-500'}`}>{user.isVerified}</p>
+                          </div>
                         </div>
                         <div className="p-2">
-                          {user.role === 'admin' && <Link to="/admin-panel" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition font-black italic">👑 Admin Control</Link>}
-                          <Link to="/history" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition">📜 Transaction History</Link>
-                          <Link to="/profile" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition">👤 Identity (KYC)</Link>
+                          {user.role === 'admin' && <Link to="/admin-panel" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition-all font-black italic">👑 Admin Control</Link>}
+                          <Link to="/history" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition-all">📜 Transaction History</Link>
+                          <Link to="/profile" onClick={() => setShowProfileMenu(false)} className="block px-4 py-3 text-sm text-gray-300 hover:bg-[#2B3139] rounded-xl transition-all">👤 Identity (KYC)</Link>
                         </div>
                         <div className="p-2 border-t border-[#2B3139]">
-                          <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 font-bold rounded-xl transition">🚪 Logout</button>
+                          <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 font-bold rounded-xl transition-all">🚪 Logout</button>
                         </div>
                       </div>
                     </>
                   )}
                 </div>
               ) : (
-                /* 🔥 Updated Login/Register buttons with items-center */
                 <div className="flex items-center gap-4">
-                  <Link to="/login" className="text-[10px] font-black uppercase tracking-widest hover:text-yellow-500 transition">Log In</Link>
-                  <Link to="/register" className="bg-yellow-500 text-black px-5 py-2 rounded-lg text-[10px] font-black uppercase transition">Register</Link>
+                  <Link to="/login" className="text-[10px] font-black uppercase tracking-widest hover:text-yellow-500 transition-all">Log In</Link>
+                  <Link to="/register" className="bg-yellow-500 text-black px-6 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all hover:bg-yellow-400 active:scale-95 shadow-lg shadow-yellow-500/20">Register</Link>
                 </div>
               )}
             </div>
@@ -424,8 +430,11 @@ function App() {
           <Route path="/register" element={<Register />} />
         </Routes>
 
-        <footer className="max-w-[1400px] mx-auto px-6 py-12 border-t border-[#2B3139] mt-12">
-           <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] text-center md:text-left">© 2026 X Market Intelligent Terminal System</p>
+        <footer className="max-w-[1400px] mx-auto px-6 py-12 border-t border-[#2B3139] mt-12 flex flex-col md:flex-row justify-between items-center gap-4">
+           <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.2em]">© 2026 X Market Intelligent Terminal System</p>
+           <div className="flex gap-6">
+              {['Terms', 'Privacy', 'API Docs'].map(f => <a key={f} href="#" className="text-gray-600 text-[10px] font-black uppercase tracking-widest hover:text-gray-400 transition-all">{f}</a>)}
+           </div>
         </footer>
       </div>
     </Router>
