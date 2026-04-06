@@ -3,10 +3,18 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 // 🌐 Professional Dynamic API Configuration
-// Railway URL အသစ်ကို အောက်မှာ အသေအချာ ထည့်သွင်းပေးထားပါတယ်
 const API_BASE_URL = window.location.hostname === "localhost" 
   ? "http://localhost:5000" 
-  : "https://x-market-backend-production-d2c4.up.railway.app"; // ✨ d2c4 ပါဝင်သော URL အသစ်သို့ အတိအကျ ပြောင်းလဲထားသည်
+  : "https://x-market-backend-production-d2c4.up.railway.app";
+
+// Axios Default Configuration (CORS နှင့် Timeout ပြဿနာများအတွက်)
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 15000, // 15 seconds
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -14,10 +22,9 @@ function Register() {
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
-  const [countdown, setCountdown] = useState(0); // OTP resend timer အတွက်
+  const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
 
-  // ⏲️ Timer Logic (OTP ပို့ပြီးရင် စက္ကန့် ၆၀ စောင့်ခိုင်းဖို့)
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -32,15 +39,15 @@ function Register() {
     
     setLoading(true);
     try {
-      // ✅ Railway Backend သစ်သို့ လှမ်းခေါ်ခြင်း (API_BASE_URL/api/send-otp)
-      const res = await axios.post(`${API_BASE_URL}/api/send-otp`, { email });
+      // ✅ Using configured api instance
+      await api.post('/api/send-otp', { email });
       setCodeSent(true);
-      setCountdown(60); // 60s timer စတင်ခြင်း
+      setCountdown(60);
       alert(`✅ Success: Verification code sent to ${email}. Please check your Mailtrap Inbox!`);
     } catch (err) {
       console.error("OTP Error Details:", err);
-      // Backend Online မဖြစ်ခြင်း သို့မဟုတ် URL လွဲနေခြင်းကို အသိပေးရန်
-      alert(err.response?.data?.message || '❌ Failed to send code. Make sure your Backend URL is correct and Online.');
+      const errorMsg = err.response?.data?.message || '❌ Network Error: Could not connect to Backend. Please check CORS settings.';
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -53,8 +60,7 @@ function Register() {
     
     setLoading(true);
     try {
-      // ✅ Register Logic (API_BASE_URL/api/register)
-      const res = await axios.post(`${API_BASE_URL}/api/register`, { 
+      const res = await api.post('/api/register', { 
         email, 
         password, 
         otp: verificationCode 
@@ -72,7 +78,6 @@ function Register() {
     <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md bg-[#1E2329] rounded-2xl border border-[#2B3139] p-8 relative shadow-2xl">
         
-        {/* Back Button */}
         <button 
           onClick={() => navigate('/')} 
           className="absolute top-5 right-5 text-gray-500 hover:text-white transition-colors p-1"
@@ -88,7 +93,6 @@ function Register() {
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5">
-          {/* Email Address */}
           <div>
             <label className="text-gray-400 text-xs font-bold uppercase mb-2 block tracking-wider">Email Address</label>
             <input 
@@ -101,7 +105,6 @@ function Register() {
             />
           </div>
 
-          {/* Password Input */}
           <div>
             <label className="text-gray-400 text-xs font-bold uppercase mb-2 block tracking-wider">Password</label>
             <input 
@@ -114,7 +117,6 @@ function Register() {
             />
           </div>
 
-          {/* OTP Verification Section */}
           <div>
             <label className="text-gray-400 text-xs font-bold uppercase mb-2 block tracking-wider">Verification Code</label>
             <div className="flex gap-3">
@@ -142,7 +144,6 @@ function Register() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <button 
             type="submit"
             disabled={loading || !codeSent || !verificationCode} 
