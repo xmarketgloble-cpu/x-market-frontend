@@ -8,10 +8,9 @@ const API_BASE_URL = window.location.hostname === "localhost"
   : "https://x-market-backend-production-d2c4.up.railway.app";
 
 // ✅ Axios Instance Configuration (Professional Setup)
-// Timeout နှင့် Headers များကို စနစ်တကျ သတ်မှတ်ထားသည်
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 15000, 
+  baseURL: `${API_BASE_URL}/api`, // baseURL ထဲမှာ /api ကို တစ်ခါတည်း ထည့်သွင်းထားသည်
+  timeout: 30000, // Timeout ကို ၃၀ စက္ကန့်အထိ တိုးမြှင့်ထားသည် (Server နိုးလာချိန်အတွက်)
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -40,22 +39,21 @@ function Register() {
     if (!email) return alert('Please enter your email first.');
     
     setLoading(true);
-    console.log("🚀 Attempting to connect to:", `${API_BASE_URL}/api/send-otp`);
+    console.log("🚀 Requesting OTP from:", `${API_BASE_URL}/api/send-otp`);
 
     try {
-      // ✅ အသုံးပြုရလွယ်ကူသော API Instance ကို အသုံးပြုထားသည်
-      await api.post('/api/send-otp', { email });
+      // baseURL တွင် /api ပါဝင်ပြီးဖြစ်၍ Endpoint သာ ရေးရန်လိုအပ်သည်
+      await api.post('/send-otp', { email });
       
       setCodeSent(true);
       setCountdown(60);
       alert(`✅ Success: Verification code sent to ${email}. Please check your Mailtrap Inbox!`);
     } catch (err) {
-      console.error("❌ OTP Error Details:", err);
+      console.error("❌ OTP Error:", err);
       
-      // CORS သို့မဟုတ် Network Error ဖြစ်ပါက ပိုမိုရှင်းလင်းသော Message ပြရန်
       const errorMsg = err.response?.data?.message || 
-                       (err.code === 'ECONNABORTED' ? 'Connection Timeout: Backend is too slow.' : 
-                       '❌ Network Error: Could not connect to Backend. Please check CORS settings or Try Incognito Mode.');
+                       (err.code === 'ECONNABORTED' ? 'Connection Timeout: Server is taking too long to respond.' : 
+                       '❌ Network Error: Could not connect to Backend. Please ensure Backend is Online.');
       alert(errorMsg);
     } finally {
       setLoading(false);
@@ -69,7 +67,7 @@ function Register() {
     
     setLoading(true);
     try {
-      const res = await api.post('/api/register', { 
+      const res = await api.post('/register', { 
         email, 
         password, 
         otp: verificationCode 
@@ -78,7 +76,7 @@ function Register() {
       navigate('/login'); 
     } catch (err) {
       console.error("❌ Register Error:", err);
-      alert(err.response?.data?.message || '❌ Registration failed. Please try a new code.');
+      alert(err.response?.data?.message || '❌ Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
