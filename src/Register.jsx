@@ -7,12 +7,14 @@ const API_BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:5000" 
   : "https://x-market-backend-production-d2c4.up.railway.app";
 
-// Axios Default Configuration (CORS နှင့် Timeout ပြဿနာများအတွက်)
+// ✅ Axios Instance Configuration (Professional Setup)
+// Timeout နှင့် Headers များကို စနစ်တကျ သတ်မှတ်ထားသည်
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000, // 15 seconds
+  timeout: 15000, 
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   }
 });
 
@@ -38,15 +40,22 @@ function Register() {
     if (!email) return alert('Please enter your email first.');
     
     setLoading(true);
+    console.log("🚀 Attempting to connect to:", `${API_BASE_URL}/api/send-otp`);
+
     try {
-      // ✅ Using configured api instance
+      // ✅ အသုံးပြုရလွယ်ကူသော API Instance ကို အသုံးပြုထားသည်
       await api.post('/api/send-otp', { email });
+      
       setCodeSent(true);
       setCountdown(60);
       alert(`✅ Success: Verification code sent to ${email}. Please check your Mailtrap Inbox!`);
     } catch (err) {
-      console.error("OTP Error Details:", err);
-      const errorMsg = err.response?.data?.message || '❌ Network Error: Could not connect to Backend. Please check CORS settings.';
+      console.error("❌ OTP Error Details:", err);
+      
+      // CORS သို့မဟုတ် Network Error ဖြစ်ပါက ပိုမိုရှင်းလင်းသော Message ပြရန်
+      const errorMsg = err.response?.data?.message || 
+                       (err.code === 'ECONNABORTED' ? 'Connection Timeout: Backend is too slow.' : 
+                       '❌ Network Error: Could not connect to Backend. Please check CORS settings or Try Incognito Mode.');
       alert(errorMsg);
     } finally {
       setLoading(false);
@@ -68,7 +77,8 @@ function Register() {
       alert(`🎉 ${res.data.message}`);
       navigate('/login'); 
     } catch (err) {
-      alert(err.response?.data?.message || '❌ Registration failed. Try a new code.');
+      console.error("❌ Register Error:", err);
+      alert(err.response?.data?.message || '❌ Registration failed. Please try a new code.');
     } finally {
       setLoading(false);
     }
