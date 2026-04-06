@@ -2,20 +2,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-// 🌐 Professional Dynamic API Configuration
-// ✅ အနောက်မှာ Slash လုံးဝ မပါကြောင်း သေချာအောင် စစ်ဆေးမည်
-const RAW_URL = window.location.hostname === "localhost" 
-  ? "http://localhost:5000" 
-  : "https://x-market-backend-production-d2c4.up.railway.app";
+// --- 🌐 API Configuration Start ---
+const API_RAW = "https://x-market-backend-production-d2c4.up.railway.app";
+const API_CLEAN = API_RAW.replace(/\/$/, "");
 
-// URL ရဲ့ အဆုံးမှာ / ပါနေရင် ဖြုတ်ပစ်ရန် Logic (Professional Way)
-const API_BASE_URL = RAW_URL.replace(/\/$/, "");
-
-// ✅ Axios Instance Configuration
 const api = axios.create({
-  // baseURL ကို string ပေါင်းစပ်မှုဖြင့် မသုံးတော့ဘဲ Slash ကင်းအောင် လုပ်ဆောင်သည်
-  baseURL: API_BASE_URL + "/api", 
-  timeout: 30000, 
+  baseURL: API_CLEAN + "/api",
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -44,11 +37,10 @@ function Register() {
     if (!email) return alert('Please enter your email first.');
     
     setLoading(true);
-    // console တွင် URL ကို အသေအချာ စစ်ဆေးနိုင်သည်
-    console.log("🚀 Testing Endpoint:", API_BASE_URL + "/api/send-otp");
+    // ✅ ပြင်ဆင်ချက် - API_BASE_URL မရှိသော error ကိုရှောင်ရန် API_CLEAN ကိုသုံးပါ
+    console.log("🚀 Testing Endpoint:", API_CLEAN + "/api/send-otp");
 
     try {
-      // ✅ path string တွင် အရှေ့မှ / ကို ဖယ်ရှားပြီး endpoint ဟုသာ ရေးပါသည်
       await api.post('send-otp', { email });
       
       setCodeSent(true);
