@@ -10,7 +10,7 @@ const API_BASE_URL = window.location.hostname === "localhost"
 
 // ✅ Axios Instance Configuration (Professional Setup)
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`, 
+  baseURL: `${API_BASE_URL}/api`, // baseURL ထဲမှာ /api ကို တစ်ခါတည်း ထည့်သွင်းထားသည်
   timeout: 30000, // Server နိုးလာချိန် သို့မဟုတ် နှေးကွေးချိန်အတွက် ၃၀ စက္ကန့် ပေးထားပါသည်
   headers: {
     'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ function Register() {
     console.log("🚀 Requesting OTP from:", `${API_BASE_URL}/api/send-otp`);
 
     try {
-      // baseURL တွင် /api ပါဝင်ပြီးဖြစ်၍ Endpoint သာ ရေးရန်လိုအပ်သည်
+      // ✅ Axios Instance တွင် baseURL ပါပြီးဖြစ်၍ path သာရေးရန်လိုသည်
       await api.post('/send-otp', { email });
       
       setCodeSent(true);
