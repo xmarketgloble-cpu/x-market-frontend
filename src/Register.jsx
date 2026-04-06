@@ -3,14 +3,15 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 // 🌐 Professional Dynamic API Configuration
+// Railway Backend URL ကို လက်ရှိ အလုပ်လုပ်နေသော d2c4 URL အတိုင်း ထားရှိပါသည်
 const API_BASE_URL = window.location.hostname === "localhost" 
   ? "http://localhost:5000" 
   : "https://x-market-backend-production-d2c4.up.railway.app";
 
 // ✅ Axios Instance Configuration (Professional Setup)
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`, // baseURL ထဲမှာ /api ကို တစ်ခါတည်း ထည့်သွင်းထားသည်
-  timeout: 30000, // Timeout ကို ၃၀ စက္ကန့်အထိ တိုးမြှင့်ထားသည် (Server နိုးလာချိန်အတွက်)
+  baseURL: `${API_BASE_URL}/api`, 
+  timeout: 30000, // Server နိုးလာချိန် သို့မဟုတ် နှေးကွေးချိန်အတွက် ၃၀ စက္ကန့် ပေးထားပါသည်
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -53,7 +54,7 @@ function Register() {
       
       const errorMsg = err.response?.data?.message || 
                        (err.code === 'ECONNABORTED' ? 'Connection Timeout: Server is taking too long to respond.' : 
-                       '❌ Network Error: Could not connect to Backend. Please ensure Backend is Online.');
+                       '❌ Network Error: Could not connect to Backend. Please ensure your Backend is Online and CORS is configured.');
       alert(errorMsg);
     } finally {
       setLoading(false);
@@ -76,7 +77,7 @@ function Register() {
       navigate('/login'); 
     } catch (err) {
       console.error("❌ Register Error:", err);
-      alert(err.response?.data?.message || '❌ Registration failed. Please try again.');
+      alert(err.response?.data?.message || '❌ Registration failed. Please try again with a new code.');
     } finally {
       setLoading(false);
     }
