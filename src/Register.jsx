@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 // Railway URL အသစ်ကို အောက်မှာ အသေအချာ ထည့်သွင်းပေးထားပါတယ်
 const API_BASE_URL = window.location.hostname === "localhost" 
   ? "http://localhost:5000" 
-  : "https://x-market-backend-production.up.railway.app";
+  : "https://x-market-backend-production-d2c4.up.railway.app"; // ✨ d2c4 ပါဝင်သော URL အသစ်သို့ အတိအကျ ပြောင်းလဲထားသည်
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -32,14 +32,15 @@ function Register() {
     
     setLoading(true);
     try {
-      // ✅ Railway Backend သစ်သို့ လှမ်းခေါ်ခြင်း
+      // ✅ Railway Backend သစ်သို့ လှမ်းခေါ်ခြင်း (API_BASE_URL/api/send-otp)
       const res = await axios.post(`${API_BASE_URL}/api/send-otp`, { email });
       setCodeSent(true);
       setCountdown(60); // 60s timer စတင်ခြင်း
       alert(`✅ Success: Verification code sent to ${email}. Please check your Mailtrap Inbox!`);
     } catch (err) {
-      console.error("OTP Error:", err);
-      alert(err.response?.data?.message || '❌ Failed to send code. Make sure your Backend is Online.');
+      console.error("OTP Error Details:", err);
+      // Backend Online မဖြစ်ခြင်း သို့မဟုတ် URL လွဲနေခြင်းကို အသိပေးရန်
+      alert(err.response?.data?.message || '❌ Failed to send code. Make sure your Backend URL is correct and Online.');
     } finally {
       setLoading(false);
     }
@@ -52,7 +53,7 @@ function Register() {
     
     setLoading(true);
     try {
-      // ✅ Register Logic
+      // ✅ Register Logic (API_BASE_URL/api/register)
       const res = await axios.post(`${API_BASE_URL}/api/register`, { 
         email, 
         password, 
@@ -87,7 +88,7 @@ function Register() {
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5">
-          {/* Email Input */}
+          {/* Email Address */}
           <div>
             <label className="text-gray-400 text-xs font-bold uppercase mb-2 block tracking-wider">Email Address</label>
             <input 
@@ -132,7 +133,7 @@ function Register() {
                 disabled={loading || countdown > 0 || !email}
                 className={`px-4 rounded-xl text-xs font-bold transition-all min-w-[100px] ${
                   countdown > 0 
-                  ? 'bg-[#2B3139] text-gray-500' 
+                  ? 'bg-[#2B3139] text-gray-500 cursor-not-allowed' 
                   : 'bg-[#2B3139] hover:bg-yellow-500 hover:text-black text-white'
                 }`}
               >
