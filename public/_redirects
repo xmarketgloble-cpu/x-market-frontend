@@ -1,1 +1,6 @@
-/* /index.html   200
+# CORS and CSP Headers
+/*    /index.html   200
+
+# Add CSP header to allow backend connection
+/register
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; connect-src 'self' https://x-market-backend-production-d2c4.up.railway.app wss://stream.binance.com:9443 https://api.binance.com;
